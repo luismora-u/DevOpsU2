@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: devops-u2-app
-          image: DOCKERHUB_USER/devops-u2-app:IMAGE_TAG
+          image: luismora1998/devops-u2-app:IMAGE_TAG
           ports:
             - containerPort: 3000
           env:
