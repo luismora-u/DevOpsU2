@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: devops-u2-app
+  labels:
+    app: devops-u2-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: devops-u2-app
+  template:
+    metadata:
+      labels:
+        app: devops-u2-app
+    spec:
+      containers:
+        - name: devops-u2-app
+          image: DOCKERHUB_USER/devops-u2-app:IMAGE_TAG
+          ports:
+            - containerPort: 3000
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: APP_VERSION
+              value: "IMAGE_TAG"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "100m"
+            limits:
+              memory: "128Mi"
+              cpu: "250m"

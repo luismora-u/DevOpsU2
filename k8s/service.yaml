@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: devops-u2-app
+  labels:
+    app: devops-u2-app
+spec:
+  selector:
+    app: devops-u2-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000
+  type: LoadBalancer
