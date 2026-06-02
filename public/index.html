@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DevOps U2 — Pipeline CI/CD</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+    }
+
+    header {
+      background: linear-gradient(135deg, #1e3a5f, #0f766e);
+      padding: 48px 24px;
+      text-align: center;
+    }
+
+    header h1 { font-size: 2.2rem; margin-bottom: 8px; }
+    header p  { font-size: 1.1rem; color: #94a3b8; }
+
+    .badge {
+      display: inline-block;
+      background: #10b981;
+      color: white;
+      font-size: 0.75rem;
+      padding: 4px 12px;
+      border-radius: 999px;
+      margin-top: 12px;
+      font-weight: 600;
+      letter-spacing: 1px;
+    }
+
+    main { max-width: 960px; margin: 0 auto; padding: 40px 24px; }
+
+    h2 {
+      font-size: 1.4rem;
+      margin: 40px 0 16px;
+      color: #38bdf8;
+      border-left: 4px solid #38bdf8;
+      padding-left: 12px;
+    }
+
+    p { line-height: 1.7; color: #cbd5e1; margin-bottom: 12px; }
+
+    /* Pipeline flow */
+    .pipeline {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin: 24px 0;
+    }
+
+    .step {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 12px 16px;
+      text-align: center;
+      min-width: 110px;
+      flex: 1;
+    }
+
+    .step .icon { font-size: 1.8rem; display: block; margin-bottom: 6px; }
+    .step .label { font-size: 0.8rem; color: #94a3b8; }
+    .step .name { font-size: 0.95rem; font-weight: 600; color: #f1f5f9; }
+
+    .arrow { color: #38bdf8; font-size: 1.4rem; flex-shrink: 0; }
+
+    /* Tools grid */
+    .tools {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+      margin: 20px 0;
+    }
+
+    .tool-card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 20px;
+    }
+
+    .tool-card .tool-name {
+      font-weight: 700;
+      font-size: 1rem;
+      color: #f8fafc;
+      margin-bottom: 4px;
+    }
+
+    .tool-card .tool-role {
+      font-size: 0.8rem;
+      color: #10b981;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .tool-card p { font-size: 0.85rem; color: #94a3b8; margin: 0; }
+
+    /* Status */
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 12px;
+      margin: 20px 0;
+    }
+
+    .status-item {
+      background: #1e293b;
+      border: 1px solid #166534;
+      border-radius: 10px;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .status-dot {
+      width: 12px; height: 12px;
+      background: #22c55e;
+      border-radius: 50%;
+      flex-shrink: 0;
+      box-shadow: 0 0 8px #22c55e;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.4; }
+    }
+
+    .status-text { font-size: 0.85rem; color: #d1fae5; font-weight: 600; }
+
+    /* Links */
+    .links { display: flex; flex-wrap: wrap; gap: 12px; margin: 20px 0; }
+
+    .link-btn {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 10px 18px;
+      color: #38bdf8;
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: background 0.2s;
+    }
+
+    .link-btn:hover { background: #334155; }
+
+    footer {
+      text-align: center;
+      padding: 32px;
+      color: #475569;
+      font-size: 0.85rem;
+      border-top: 1px solid #1e293b;
+      margin-top: 60px;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>DevOps U2 — Pipeline CI/CD</h1>
+    <p>Fundamentos de DevOps · Actividad 3</p>
+    <span class="badge">PRODUCCIÓN</span>
+  </header>
+
+  <main>
+
+    <h2>¿Qué construimos?</h2>
+    <p>
+      Implementamos una arquitectura DevOps completa que automatiza todo el ciclo de vida
+      de esta aplicación web: desde que el desarrollador escribe código hasta que está
+      disponible en producción, sin intervención manual.
+    </p>
+    <p>
+      Cada vez que se hace un <strong>git push</strong> a GitHub, el sistema activa
+      automáticamente las pruebas, construye la imagen Docker, la publica en Docker Hub
+      y la despliega en Kubernetes — todo en menos de 3 minutos.
+    </p>
+
+    <h2>Flujo del Pipeline</h2>
+    <div class="pipeline">
+      <div class="step">
+        <span class="icon">👨‍💻</span>
+        <div class="name">Desarrollador</div>
+        <div class="label">git push</div>
+      </div>
+      <span class="arrow">→</span>
+      <div class="step">
+        <span class="icon">🐙</span>
+        <div class="name">GitHub</div>
+        <div class="label">Repositorio</div>
+      </div>
+      <span class="arrow">→</span>
+      <div class="step">
+        <span class="icon">⚙️</span>
+        <div class="name">GitHub Actions</div>
+        <div class="label">CI · Pruebas</div>
+      </div>
+      <span class="arrow">→</span>
+      <div class="step">
+        <span class="icon">🐳</span>
+        <div class="name">Docker Hub</div>
+        <div class="label">Imagen</div>
+      </div>
+      <span class="arrow">→</span>
+      <div class="step">
+        <span class="icon">🔧</span>
+        <div class="name">Jenkins</div>
+        <div class="label">CD · Deploy</div>
+      </div>
+      <span class="arrow">→</span>
+      <div class="step">
+        <span class="icon">☸️</span>
+        <div class="name">Kubernetes</div>
+        <div class="label">Producción</div>
+      </div>
+    </div>
+
+    <h2>Herramientas utilizadas</h2>
+    <div class="tools">
+      <div class="tool-card">
+        <div class="tool-name">GitHub</div>
+        <div class="tool-role">Control de versiones</div>
+        <p>Repositorio central del código. Cada push dispara el pipeline automáticamente.</p>
+      </div>
+      <div class="tool-card">
+        <div class="tool-name">GitHub Actions</div>
+        <div class="tool-role">Integración Continua</div>
+        <p>Ejecuta pruebas, construye y publica la imagen Docker en cada cambio.</p>
+      </div>
+      <div class="tool-card">
+        <div class="tool-name">Docker</div>
+        <div class="tool-role">Contenedorización</div>
+        <p>Empaqueta la app con todas sus dependencias para que funcione igual en cualquier entorno.</p>
+      </div>
+      <div class="tool-card">
+        <div class="tool-name">Docker Hub</div>
+        <div class="tool-role">Registro de imágenes</div>
+        <p>Almacena las versiones de la imagen lista para desplegar.</p>
+      </div>
+      <div class="tool-card">
+        <div class="tool-name">Jenkins</div>
+        <div class="tool-role">Entrega Continua</div>
+        <p>Toma la imagen validada y la despliega en Kubernetes de forma automática.</p>
+      </div>
+      <div class="tool-card">
+        <div class="tool-name">Kubernetes</div>
+        <div class="tool-role">Orquestación</div>
+        <p>Mantiene 2 réplicas de la app corriendo con auto-recuperación ante fallos.</p>
+      </div>
+    </div>
+
+    <h2>Estado del sistema</h2>
+    <div class="status-grid">
+      <div class="status-item">
+        <div class="status-dot"></div>
+        <div class="status-text">GitHub Actions CI</div>
+      </div>
+      <div class="status-item">
+        <div class="status-dot"></div>
+        <div class="status-text">Jenkins CD</div>
+      </div>
+      <div class="status-item">
+        <div class="status-dot"></div>
+        <div class="status-text">Docker Hub</div>
+      </div>
+      <div class="status-item">
+        <div class="status-dot"></div>
+        <div class="status-text">Kubernetes (2 pods)</div>
+      </div>
+    </div>
+
+    <h2>Enlaces del proyecto</h2>
+    <div class="links">
+      <a class="link-btn" href="https://github.com/luismora-u/DevOpsU2" target="_blank">
+        🐙 Repositorio GitHub
+      </a>
+      <a class="link-btn" href="https://github.com/luismora-u/DevOpsU2/actions" target="_blank">
+        ⚙️ GitHub Actions
+      </a>
+      <a class="link-btn" href="http://localhost:8080" target="_blank">
+        🔧 Jenkins
+      </a>
+      <a class="link-btn" href="https://hub.docker.com/r/luismora1998/devops-u2-app" target="_blank">
+        🐳 Docker Hub
+      </a>
+      <a class="link-btn" href="/health">
+        💚 Health Check
+      </a>
+      <a class="link-btn" href="/api/info">
+        ℹ️ API Info
+      </a>
+    </div>
+
+  </main>
+
+  <footer>
+    Fundamentos de DevOps · Universidad · 2026 · luismora-u
+  </footer>
+
+</body>
+</html>
